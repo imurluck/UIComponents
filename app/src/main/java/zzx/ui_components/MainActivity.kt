@@ -3,31 +3,26 @@ package zzx.ui_components
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
+
+    private val fruitList = arrayOf("Apple", "Apricot",
+        "Arbutus", "Banana", "Bennett", "Barbados", "Casaba", "Gooseberry",
+        "Grapefruit", "Kernel", "Tangerine", "Walnut", "Watermelon")
+
+    private val TEST_STRING: String = "this is a test String used by add click"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        flowLayout.setList(createList())
+        flowLayout.setList(fruitList.asList())
         btn.setOnClickListener {
-            flowLayout.add("add click ssss sdasaffau")
+            Random.nextInt(TEST_STRING.length).apply {
+                val endIndex = if (this > 0) this else 1
+                flowLayout.add(TEST_STRING.substring(0, endIndex))
+            }
         }
     }
 
-    private fun createList(): List<String> {
-        val list = mutableListOf<String>()
-        list.add("first")
-        list.add("second")
-        list.add("third")
-        list.add("forth")
-//        for(i in 0 until 20) {
-//            var text = ""
-//            for(j in 0 until i) {
-//                text += j
-//            }
-//            list.add(text)
-//        }
-        return list
-    }
 }

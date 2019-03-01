@@ -3,6 +3,7 @@ package zzx.components.layout
 import android.content.Context
 import android.graphics.Color
 import android.icu.util.Measure
+import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
@@ -69,6 +70,7 @@ open class FlowLayout @JvmOverloads constructor(
                 lineWidth = getChildAt(i).measuredWidth
                 lines++
             }
+            lineWidth += padding
         }
         height = childHeight * lines + lineSpace * (lines - 1)
         if (height > maxHeight) {
@@ -133,6 +135,8 @@ open class FlowLayout @JvmOverloads constructor(
             .inflate(tvId, null)
             as TextView
         textView.text = text
+        textView.maxLines = 1
+        textView.ellipsize = TextUtils.TruncateAt.END
         return textView
     }
 
