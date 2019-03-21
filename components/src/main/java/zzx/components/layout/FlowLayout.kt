@@ -10,6 +10,7 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.MeasureSpec.AT_MOST
+import android.view.View.MeasureSpec.UNSPECIFIED
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -44,16 +45,22 @@ open class FlowLayout @JvmOverloads constructor(
             measureChild(getChildAt(i), widthMeasureSpec, heightMeasureSpec)
         }
         if (widthMode == AT_MOST) {
-            realWidth = calculateRealWidth(maxWidth)
+            realWidth = calculateRealWidth(maxWidth, false)
+        }
+        if (widthMode == UNSPECIFIED) {
+            realWidth = calculateRealWidth(maxWidth, true)
         }
         if (heightMode == AT_MOST) {
-            realHeight = calculateRealHeight(realWidth, maxHeight)
+            realHeight = calculateRealHeight(realWidth, maxHeight, false)
         }
-        super.onMeasure(MeasureSpec.makeMeasureSpec(realWidth, widthMode),
+        if (heightMode == UNSPECIFIED) {
+            realHeight = calculateRealHeight(realWidth, maxHeight, true)
+        }
+        setMeasuredDimension(MeasureSpec.makeMeasureSpec(realWidth, widthMode),
             MeasureSpec.makeMeasureSpec(realHeight, heightMode))
     }
 
-    private fun calculateRealHeight(realWidth: Int, maxHeight: Int): Int {
+    private fun calculateRealHeight(realWidth: Int, maxHeight: Int, unspecified: Boolean): Int {
         var height = 0
         if (childCount == 0) {
             lines = 0
@@ -73,20 +80,20 @@ open class FlowLayout @JvmOverloads constructor(
             lineWidth += padding
         }
         height = childHeight * lines + lineSpace * (lines - 1)
-        if (height > maxHeight) {
+        if (height > maxHeight && !unspecified) {
             height = maxHeight
         }
         return height
     }
 
-    private fun calculateRealWidth(maxWidth: Int): Int {
+    private fun calculateRealWidth(maxWidth: Int, unspecified: Boolean): Int {
         var width = 0
         for(i in 0 until childCount) {
             if (i > 0) {
                 width += padding
             }
             width += getChildAt(i).measuredWidth
-            if (width >= maxWidth) {
+            if (width >= maxWidth && !unspecified) {
                 return maxWidth
             }
         }
