@@ -1,5 +1,6 @@
 ### ContextMenuDialog
    an menu dialog project expanded with project [Context-Menu.Android](https://github.com/Yalantis/Context-Menu.Android)
+   
    <img src="./context-menu-dialog.gif" width="300" alt="ContextMenuDialog" />
    
 ### Usage:
