@@ -17,7 +17,7 @@
 			<!--</intent-filter>-->
 		</activity>
 
-		<activity android:name=".ContextMenuDialogActivity">
+		<activity android:name=".contextmenu.ContextMenuDialogActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"/>
 
