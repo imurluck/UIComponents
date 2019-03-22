@@ -1,6 +1,6 @@
 ### ContextMenuDialog
    an menu dialog project expanded with project [Context-Menu.Android](https://github.com/Yalantis/Context-Menu.Android)
-   <img src="./context-menu-dialog.gif" width="500" alt="ContextMenuDialog" />
+   <img src="./context-menu-dialog.gif" width="300" alt="ContextMenuDialog" />
    
 ### Usage:
    first step, create ContextMenuDialog
@@ -21,7 +21,7 @@ contextMenuDialog.add("Block user", R.drawable.ic_block_primary_48dp)
 supportFragmentManager.findFragmentByTag(ContextMenuDialog.TAG)
             ?: contextMenuDialog.show(supportFragmentManager, ContextMenuDialog.TAG)
 ```
-    further, you can set the position of context-menu-dialog where to display, 
+   further, you can set the position of context-menu-dialog where to display, 
     just set the gravity before you show the dialog, like
 ```
 contextMenuDialog.gravity = MenuGravity.END
