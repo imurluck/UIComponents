@@ -10,14 +10,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.Toast
+import android.widget.LinearLayout
 import androidx.annotation.DrawableRes
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import kotlinx.android.synthetic.main.dialog_context_menu.view.*
 import zzx.components.R
 /**
- * ContextMenuDialog
+ * ContextMenuDialog, this dialog is used to show menu items for some actions
+ * with pretty animation
  * create by zzx
  * create at 19-3-21
  */
@@ -25,34 +25,49 @@ open class ContextMenuDialog: DialogFragment() {
 
     private val menuItemList = mutableListOf<MenuItem>()
 
+    var onItemClickListener: ((MenuItem, Int) -> Unit)? =  null
+    var onItemLongClickListener: ((MenuItem, Int) -> Unit)? = null
+
     private var openAnimatorSet: AnimatorSet? = null
     private var closeAnimatorSet: AnimatorSet? = null
 
     var gravity = MenuGravity.END
-    var delay = 0L
-    var duration = 100L
+    var delay = DEFAULT_DELAY
+    var duration = DEFAULT_DURATION
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setStyle(STYLE_NO_FRAME, R.style.MenuDialogStyle)
     }
 
+    /**
+     * create view and create item layout
+     */
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
-            inflater.inflate(R.layout.dialog_context_menu, container, false).apply {
-                dialog.window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-                menuWrapper.apply {
-                    for (item in menuItemList) {
-                        item.checkParams(context)
-                        addView(item.getItemLayout(this, this@ContextMenuDialog.gravity,
-                            item == menuItemList.last()).apply {
-                            setOnClickListener {
-                                showCloseAnimation(indexOfChild(it))
-                                Toast.makeText(context, "clicked", Toast.LENGTH_SHORT).show()
-                            }
-                        })
-                    }
+        if (gravity == MenuGravity.START || gravity == MenuGravity.END) {
+            inflater.inflate(R.layout.dialog_context_menu_vertical, container, false)
+        } else {
+            inflater.inflate(R.layout.dialog_context_menu_horizontal, container, false)
+        }.apply {
+            dialog.window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+            findViewById<LinearLayout>(R.id.menuWrapper).apply {
+                for (item in menuItemList) {
+                    item.checkParams(context)
+                    addView(item.getItemLayout(
+                        this, this@ContextMenuDialog.gravity,
+                        item == menuItemList.last()
+                    ).apply {
+                        setOnClickListener {
+                            showCloseAnimation(indexOfChild(it), ON_ITEM_CLICK)
+                        }
+                        setOnLongClickListener {
+                            showCloseAnimation(indexOfChild(it), ON_ITEM_LONG_CLICK)
+                            return@setOnLongClickListener true
+                        }
+                    })
                 }
             }
+        }
 
 
     /**
@@ -77,14 +92,39 @@ open class ContextMenuDialog: DialogFragment() {
                 }
             }
             playSequentially(animatorList as List<Animator>?)
+            addListener(object: AnimatorListenerAdapter() {
+                override fun onAnimationStart(animation: Animator?) {
+                    disableItemsClickable()
+                }
+
+                override fun onAnimationEnd(animation: Animator?) {
+                    enableItemsClickable()
+                }
+            })
             start()
+        }
+    }
+
+    private fun disableItemsClickable() {
+        for (menuItem in menuItemList) {
+            menuItem.itemLayout?.isClickable = false
+            menuItem.itemLayout?.isLongClickable = false
+        }
+    }
+
+    private fun enableItemsClickable() {
+        for (menuItem in menuItemList) {
+            menuItem.itemLayout?.isClickable = true
+            menuItem.itemLayout?.isLongClickable = true
         }
     }
 
     /**
      * close animation should be created by the clicked view index
+     * after the animation finished, dismiss the dialog, and notify
+     * the [onItemClickListener] or [onItemLongClickListener]
      */
-    private fun showCloseAnimation(clickIndex: Int) {
+    private fun showCloseAnimation(clickIndex: Int, clickType: Int) {
         closeAnimatorSet = AnimatorSet().apply {
             val animatorList = mutableListOf<AnimatorSet>()
             var i = 0
@@ -112,15 +152,25 @@ open class ContextMenuDialog: DialogFragment() {
                 }
             }
             animatorList.add(menuItemList[clickIndex].closeAnimator!!)
-            duration = 100L
             playSequentially(animatorList as List<AnimatorSet>)
-            start()
         }.apply {
+            duration = this@ContextMenuDialog.duration
             addListener(object: AnimatorListenerAdapter() {
+                override fun onAnimationStart(animation: Animator?) {
+                    disableItemsClickable()
+                }
+
                 override fun onAnimationEnd(animation: Animator?) {
+                    enableItemsClickable()
                     dismiss()
+                    if (clickType == ON_ITEM_CLICK) {
+                        onItemClickListener?.invoke(menuItemList[clickIndex], clickIndex)
+                    } else if (clickType == ON_ITEM_LONG_CLICK) {
+                        onItemLongClickListener?.invoke(menuItemList[clickIndex], clickIndex)
+                    }
                 }
             })
+            start()
         }
     }
 
@@ -171,6 +221,12 @@ open class ContextMenuDialog: DialogFragment() {
     }
 
     companion object {
+
+        private const val ON_ITEM_CLICK = 0
+        private const val ON_ITEM_LONG_CLICK = 1
+
+        private const val DEFAULT_DURATION = 100L
+        private const val DEFAULT_DELAY = 0L
 
         const val TAG = "ContextMenuDialog"
 

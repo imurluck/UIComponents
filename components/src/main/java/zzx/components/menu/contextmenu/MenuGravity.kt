@@ -7,5 +7,5 @@ package zzx.components.menu.contextmenu
  * create at 19-3-21
  */
 enum class MenuGravity {
-    START, END
+    START, END, TOP, BOTTOM
 }
